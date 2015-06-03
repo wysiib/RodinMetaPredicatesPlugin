@@ -27,11 +27,32 @@ public class ReplacementRewriter extends DefaultRewriter {
 	public Predicate rewrite(ExtendedPredicate arg0) {
 		IPredicateExtension extension = arg0.getExtension();
 
+		if ("controller".equals(extension.getSyntaxSymbol())) {
+			return controllerPredicate(arg0);
+		}
+		if ("deadlock".equals(extension.getSyntaxSymbol())) {
+			return deadlockPredicate(arg0);
+		}
+		if ("deterministic".equals(extension.getSyntaxSymbol())) {
+			return deterministicPredicate(arg0);
+		}
 		if ("enabled".equals(extension.getSyntaxSymbol())) {
 			return enabledPredicate(arg0);
 		}
 
 		return arg0;
+	}
+
+	private Predicate controllerPredicate(ExtendedPredicate arg0) {
+		throw new UnsupportedOperationException();
+	}
+
+	private Predicate deadlockPredicate(ExtendedPredicate arg0) {
+		throw new UnsupportedOperationException();
+	}
+
+	private Predicate deterministicPredicate(ExtendedPredicate arg0) {
+		throw new UnsupportedOperationException();
 	}
 
 	private Predicate enabledPredicate(ExtendedPredicate arg0) {
