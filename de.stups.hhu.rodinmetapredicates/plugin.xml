@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.rodinp.core.internalElementTypes">
+      <internalElementType
+            class="de.stups.hhu.rodinmetapredicates.attributes.GlobalGuard"
+            id="globalGuard"
+            name="Event-B Global Guard Element">
+      </internalElementType>
+      <internalElementType
+            class="de.stups.hhu.rodinmetapredicates.attributes.ExtendedGuard"
+            id="extendedGuard"
+            name="Event-B Extended Guard">
+      </internalElementType>
+   </extension>
+   <extension
+         point="org.rodinp.core.itemRelations">
+      <relationship
+            parentTypeId="org.eventb.core.machineFile">
+         <childType
+               typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+         </childType>
+      </relationship>
+      <relationship
+            parentTypeId="org.eventb.core.event">
+         <childType
+               typeId="de.stups.hhu.rodinmetapredicates.extendedGuard">
+         </childType>
+      </relationship>
+   </extension>
+      <extension
+         point="org.eventb.ui.editorItems">
+      <element
+            defaultColumn="0"
+            imagePath="icons/sample.gif"
+            prefix="GLOBAL GUARD"
+            typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+      </element>
+      <element
+            defaultColumn="0"
+            imagePath="icons/sample.gif"
+            prefix="EXTENDED GUARD"
+            typeId="de.stups.hhu.rodinmetapredicates.extendedGuard">
+      </element>
+      <attributeRelation
+            elementTypeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+         <attributeReference
+               descriptionId="org.eventb.ui.predicate">
+         </attributeReference>
+         <attributeReference
+               descriptionId="org.eventb.ui.comment">
+         </attributeReference>
+      </attributeRelation>
+      <childRelation
+            parentTypeId="org.eventb.core.machineFile">
+         <childType
+               priority="65"
+               typeId="de.stups.hhurodinmetapredicates.globalGuard">
+         </childType>
+      </childRelation>
+      <attributeRelation
+            elementTypeId="de.stups.hhu.rodinmetapredicates.extendedGuard">
+         <attributeReference
+               descriptionId="org.eventb.ui.predicate">
+         </attributeReference>
+         <attributeReference
+               descriptionId="org.eventb.ui.comment">
+         </attributeReference>
+      </attributeRelation>
+      <childRelation
+            parentTypeId="org.eventb.core.event">
+         <childType
+               priority="30"
+               typeId="de.stups.hhu.rodinmetapredicates.extendedGuard">
+         </childType>
+      </childRelation>
+   </extension>
+      <extension
+         point="org.eventb.core.configurations">
+      <configuration
+            id="mchBase"
+            name="mchBase">
+         <scModule
+               id="de.stups.hhu.rodinmetapredicates.extendedGuardProcessor">
+         </scModule>
+         <scModule
+               id="de.stups.hhu.rodinmetapredicates.globalGuardProcessor">
+         </scModule>
+      </configuration>
+   </extension>
+   <extension
+         id="scMachineModuleTypes"
+         point="org.eventb.core.scModuleTypes">
+      <processorType
+            class="de.stups.hhu.rodinmetapredicates.sc.GlobalGuardProcessor"
+            id="globalGuardProcessor"
+            name="globalGuardProcessor"
+            parent="org.eventb.core.machineModule">
+             <prereq
+               id="org.eventb.core.machineEventModule">
+         </prereq>
+      </processorType>
+      <processorType
+            class="de.stups.hhu.rodinmetapredicates.sc.ExtendedGuardProcessor"
+            id="extendedGuardProcessor"
+            name="extendedGuardProcessor"
+            parent="org.eventb.core.machineModule">
+            <prereq
+               id="org.eventb.core.machineEventModule">
+         </prereq>
+      </processorType>
+   </extension>
+   
+</plugin>
+
+
+
