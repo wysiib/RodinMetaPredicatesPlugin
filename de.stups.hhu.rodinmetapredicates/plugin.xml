@@ -34,13 +34,13 @@
       <element
             defaultColumn="0"
             imagePath="icons/sample.gif"
-            prefix="GLOBAL GUARD"
+            prefix="EXTENDED INVARIANTS"
             typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
       </element>
       <element
             defaultColumn="0"
             imagePath="icons/sample.gif"
-            prefix="EXTENDED GUARD"
+            prefix="EXTENDED GUARDS"
             typeId="de.stups.hhu.rodinmetapredicates.extendedGuard">
       </element>
       <attributeRelation
@@ -55,8 +55,8 @@
       <childRelation
             parentTypeId="org.eventb.core.machineFile">
          <childType
-               priority="65"
-               typeId="de.stups.hhurodinmetapredicates.globalGuard">
+               priority="35"
+               typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
          </childType>
       </childRelation>
       <attributeRelation
