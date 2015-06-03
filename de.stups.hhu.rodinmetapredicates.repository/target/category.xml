@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+	<feature url="features/de.stups.hhu.rodinmetapredicates.feature_1.0.0.qualifier.jar" id="de.stups.hhu.rodinmetapredicates.feature" version="1.0.0.qualifier">
+		<category name="de.stups.hhu.rodinmetapredicates.feature.category"/>
+	</feature>
+
+	<category-def name="de.stups.hhu.rodinmetapredicates.feature.category" label="Meta-Predicates for Event-B">
+      <description>
+			null
+      </description>
+   </category-def>
+</site>

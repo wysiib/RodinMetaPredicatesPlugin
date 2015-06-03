@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: de.stups.hhu.rodinmetapredicates;singleton:=true
+Bundle-Name: Extended Guards Language for Rodin
+Bundle-Version: 1.0.0.201506031007
+Require-Bundle: org.eclipse.core.runtime,org.eclipse.ui.workbench,org.
+ rodinp.core,org.eventb.core,org.eclipse.core.resources;bundle-version
+ ="3.9.1",org.eventb.core.ast;bundle-version="3.1.0"
+Bundle-ManifestVersion: 2
+Bundle-Activator: de.stups.hhu.rodinmetapredicates.Activator
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+

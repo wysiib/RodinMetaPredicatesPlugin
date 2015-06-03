@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<units size='1'>
+  <unit id='de.stups.hhu.rodinmetapredicates' version='1.0.0.201506031007'>
+    <update id='de.stups.hhu.rodinmetapredicates' range='[0.0.0,1.0.0.201506031007)' severity='0'/>
+    <properties size='4'>
+      <property name='org.eclipse.equinox.p2.name' value='Extended Guards Language for Rodin'/>
+      <property name='maven-groupId' value='de.stups.hhu.rodinmetapredicates'/>
+      <property name='maven-artifactId' value='de.stups.hhu.rodinmetapredicates'/>
+      <property name='maven-version' value='1.0.0.qualifier'/>
+    </properties>
+    <provides size='3'>
+      <provided namespace='org.eclipse.equinox.p2.iu' name='de.stups.hhu.rodinmetapredicates' version='1.0.0.201506031007'/>
+      <provided namespace='osgi.bundle' name='de.stups.hhu.rodinmetapredicates' version='1.0.0.201506031007'/>
+      <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+    </provides>
+    <requires size='6'>
+      <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.ui.workbench' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.rodinp.core' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eventb.core' range='0.0.0'/>
+      <required namespace='osgi.bundle' name='org.eclipse.core.resources' range='3.9.1'/>
+      <required namespace='osgi.bundle' name='org.eventb.core.ast' range='3.1.0'/>
+    </requires>
+    <artifacts size='1'>
+      <artifact classifier='osgi.bundle' id='de.stups.hhu.rodinmetapredicates' version='1.0.0.201506031007'/>
+    </artifacts>
+    <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+    <touchpointData size='1'>
+      <instructions size='1'>
+        <instruction key='manifest'>
+          Bundle-SymbolicName: de.stups.hhu.rodinmetapredicates;singleton:=true&#xA;Bundle-Version: 1.0.0.201506031007&#xA;
+        </instruction>
+      </instructions>
+    </touchpointData>
+  </unit>
+</units>
