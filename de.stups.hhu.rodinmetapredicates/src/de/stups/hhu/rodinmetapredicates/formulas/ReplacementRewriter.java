@@ -28,40 +28,43 @@ public class ReplacementRewriter extends DefaultRewriter {
 		IPredicateExtension extension = arg0.getExtension();
 
 		if ("enabled".equals(extension.getSyntaxSymbol())) {
-			// there should be one child expression, namely the set of events
-			Expression[] childExpressions = arg0.getChildExpressions();
-			SetExtension setOfEvents = (SetExtension) childExpressions[0];
-			List<String> subFormulas = new ArrayList<String>();
-			for (Expression expression : setOfEvents.getMembers()) {
-				ISCEvent scEvent;
-				try {
-					scEvent = getSCEvent(expression.toString());
-					ISCGuard[] guards = scEvent
-							.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
-					for (ISCGuard g : guards) {
-						subFormulas.add(g.getPredicateString());
-					}
-				} catch (RodinDBException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-			}
-
-			if (subFormulas.isEmpty()) {
-				return arg0.getFactory().makeLiteralPredicate(Predicate.BTRUE,
-						null);
-			} else {
-				String formula = conjoinStrings(subFormulas);
-
-				IParseResult parsePredicate = arg0.getFactory().parsePredicate(
-						formula, null);
-
-				return parsePredicate.getParsedPredicate();
-			}
+			return enabledPredicate(arg0);
 		}
 
 		return arg0;
+	}
+
+	private Predicate enabledPredicate(ExtendedPredicate arg0) {
+		// there should be one child expression, namely the set of events
+		Expression[] childExpressions = arg0.getChildExpressions();
+		SetExtension setOfEvents = (SetExtension) childExpressions[0];
+		List<String> subFormulas = new ArrayList<String>();
+		for (Expression expression : setOfEvents.getMembers()) {
+			ISCEvent scEvent;
+			try {
+				scEvent = getSCEvent(expression.toString());
+				ISCGuard[] guards = scEvent
+						.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
+				for (ISCGuard g : guards) {
+					subFormulas.add(g.getPredicateString());
+				}
+			} catch (RodinDBException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		if (subFormulas.isEmpty()) {
+			return arg0.getFactory()
+					.makeLiteralPredicate(Predicate.BTRUE, null);
+		} else {
+			String formula = conjoinStrings(subFormulas);
+
+			IParseResult parsePredicate = arg0.getFactory().parsePredicate(
+					formula, null);
+
+			return parsePredicate.getParsedPredicate();
+		}
 	}
 
 	private String conjoinStrings(List<String> subFormulas) {
