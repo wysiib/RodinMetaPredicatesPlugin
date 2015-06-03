@@ -27,17 +27,23 @@ public class ReplacementRewriter extends DefaultRewriter {
 	public Predicate rewrite(ExtendedPredicate arg0) {
 		IPredicateExtension extension = arg0.getExtension();
 
-		if ("controller".equals(extension.getSyntaxSymbol())) {
-			return controllerPredicate(arg0);
-		}
-		if ("deadlock".equals(extension.getSyntaxSymbol())) {
-			return deadlockPredicate(arg0);
-		}
-		if ("deterministic".equals(extension.getSyntaxSymbol())) {
-			return deterministicPredicate(arg0);
-		}
-		if ("enabled".equals(extension.getSyntaxSymbol())) {
-			return enabledPredicate(arg0);
+		try {
+			if ("controller".equals(extension.getSyntaxSymbol())) {
+				return controllerPredicate(arg0);
+			}
+			if ("deadlock".equals(extension.getSyntaxSymbol())) {
+
+				return deadlockPredicate(arg0);
+
+			}
+			if ("deterministic".equals(extension.getSyntaxSymbol())) {
+				return deterministicPredicate(arg0);
+			}
+			if ("enabled".equals(extension.getSyntaxSymbol())) {
+				return enabledPredicate(arg0);
+			}
+		} catch (RodinDBException e) {
+			e.printStackTrace();
 		}
 
 		return arg0;
@@ -47,32 +53,59 @@ public class ReplacementRewriter extends DefaultRewriter {
 		throw new UnsupportedOperationException();
 	}
 
-	private Predicate deadlockPredicate(ExtendedPredicate arg0) {
-		throw new UnsupportedOperationException();
+	private Predicate deadlockPredicate(ExtendedPredicate arg0)
+			throws RodinDBException {
+		// there should be one child expression, namely the set of events
+		Expression[] childExpressions = arg0.getChildExpressions();
+		SetExtension setOfEvents = (SetExtension) childExpressions[0];
+		List<String> subFormulas = new ArrayList<String>();
+		for (Expression expression : setOfEvents.getMembers()) {
+			List<String> guardPredicates = new ArrayList<String>();
+			ISCEvent scEvent;
+			scEvent = getSCEvent(expression.toString());
+			ISCGuard[] guards = scEvent
+					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
+			for (ISCGuard g : guards) {
+				guardPredicates.add(g.getPredicateString());
+			}
+
+			// \u00ac = logical not
+			subFormulas.add("(\u00ac " + conjoinStrings(guardPredicates) + ")");
+
+		}
+
+		if (subFormulas.isEmpty()) {
+			return arg0.getFactory()
+					.makeLiteralPredicate(Predicate.BTRUE, null);
+		} else {
+			String formula = conjoinStrings(subFormulas);
+
+			IParseResult parsePredicate = arg0.getFactory().parsePredicate(
+					formula, null);
+
+			return parsePredicate.getParsedPredicate();
+		}
 	}
 
 	private Predicate deterministicPredicate(ExtendedPredicate arg0) {
 		throw new UnsupportedOperationException();
 	}
 
-	private Predicate enabledPredicate(ExtendedPredicate arg0) {
+	private Predicate enabledPredicate(ExtendedPredicate arg0)
+			throws RodinDBException {
 		// there should be one child expression, namely the set of events
 		Expression[] childExpressions = arg0.getChildExpressions();
 		SetExtension setOfEvents = (SetExtension) childExpressions[0];
 		List<String> subFormulas = new ArrayList<String>();
 		for (Expression expression : setOfEvents.getMembers()) {
 			ISCEvent scEvent;
-			try {
-				scEvent = getSCEvent(expression.toString());
-				ISCGuard[] guards = scEvent
-						.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
-				for (ISCGuard g : guards) {
-					subFormulas.add(g.getPredicateString());
-				}
-			} catch (RodinDBException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			scEvent = getSCEvent(expression.toString());
+			ISCGuard[] guards = scEvent
+					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
+			for (ISCGuard g : guards) {
+				subFormulas.add(g.getPredicateString());
 			}
+
 		}
 
 		if (subFormulas.isEmpty()) {

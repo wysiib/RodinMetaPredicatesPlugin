@@ -57,15 +57,19 @@ public class ExtendedInvariantProcessor extends SCProcessorModule {
 		for (ExtendedInvariant ei : extendedInvariants) {
 			IParseResult parsed = ff.parsePredicate(ei.getPredicateString(),
 					null);
-			Predicate rewritten = parsed.getParsedPredicate().rewrite(
-					new ReplacementRewriter(scMachineRoot));
+			if (parsed.getProblems().isEmpty()) {
+				Predicate rewritten = parsed.getParsedPredicate().rewrite(
+						new ReplacementRewriter(scMachineRoot));
 
-			ISCInvariant newInvariant = scMachineRoot.createChild(
-					ISCInvariant.ELEMENT_TYPE, null, monitor);
-			newInvariant.setLabel(getNextLabel(), monitor);
-			newInvariant.setPredicateString(
-					rewritten.toStringFullyParenthesized(), monitor);
-			newInvariant.setSource(ei, monitor);
+				ISCInvariant newInvariant = scMachineRoot.createChild(
+						ISCInvariant.ELEMENT_TYPE, null, monitor);
+				newInvariant.setLabel(getNextLabel(), monitor);
+				newInvariant.setPredicateString(
+						rewritten.toStringFullyParenthesized(), monitor);
+				newInvariant.setSource(ei, monitor);
+			} else {
+				// TODO create problem marker!
+			}
 		}
 
 	}

@@ -2,11 +2,9 @@ package de.stups.hhu.rodinmetapredicates.formulas;
 
 import org.eventb.core.ast.ExtendedPredicate;
 import org.eventb.core.ast.Predicate;
-import org.eventb.core.ast.extension.ExtensionFactory;
 import org.eventb.core.ast.extension.ICompatibilityMediator;
 import org.eventb.core.ast.extension.IExtendedFormula;
 import org.eventb.core.ast.extension.IExtensionKind;
-import org.eventb.core.ast.extension.IOperatorProperties.FormulaType;
 import org.eventb.core.ast.extension.IPredicateExtension;
 import org.eventb.core.ast.extension.IPriorityMediator;
 import org.eventb.core.ast.extension.ITypeCheckMediator;
@@ -46,8 +44,7 @@ public class Deadlock implements IPredicateExtension {
 
 	@Override
 	public IExtensionKind getKind() {
-		return ExtensionFactory.makePrefixKind(FormulaType.PREDICATE,
-				ExtensionFactory.makeChildTypes());
+		return PARENTHESIZED_UNARY_PREDICATE;
 	}
 
 	@Override
