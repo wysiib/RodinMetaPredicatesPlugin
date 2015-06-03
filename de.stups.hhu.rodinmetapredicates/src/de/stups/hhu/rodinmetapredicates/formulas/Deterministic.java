@@ -10,6 +10,8 @@ import org.eventb.core.ast.extension.IPriorityMediator;
 import org.eventb.core.ast.extension.ITypeCheckMediator;
 import org.eventb.core.ast.extension.IWDMediator;
 
+import de.stups.hhu.rodinmetapredicates.Activator;
+
 public class Deterministic implements IPredicateExtension {
 
 	@Override
@@ -32,14 +34,12 @@ public class Deterministic implements IPredicateExtension {
 
 	@Override
 	public String getGroupId() {
-		// TODO Auto-generated method stub
-		return null;
+		return Activator.PLUGIN_ID;
 	}
 
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
-		return null;
+		return Activator.PLUGIN_ID + ".deterministic";
 	}
 
 	@Override

@@ -26,6 +26,7 @@ import org.rodinp.core.RodinDBException;
 import de.stups.hhu.rodinmetapredicates.Activator;
 import de.stups.hhu.rodinmetapredicates.attributes.ExtendedGuard;
 import de.stups.hhu.rodinmetapredicates.formulas.Controller;
+import de.stups.hhu.rodinmetapredicates.formulas.Deadlock;
 import de.stups.hhu.rodinmetapredicates.formulas.Deterministic;
 import de.stups.hhu.rodinmetapredicates.formulas.Enabled;
 import de.stups.hhu.rodinmetapredicates.formulas.ReplacementRewriter;
@@ -91,6 +92,7 @@ public class ExtendedGuardProcessor extends SCProcessorModule {
 		fes.add(new Controller());
 		fes.add(new Deterministic());
 		fes.add(new Enabled());
+		fes.add(new Deadlock());
 		return fes;
 	}
 
