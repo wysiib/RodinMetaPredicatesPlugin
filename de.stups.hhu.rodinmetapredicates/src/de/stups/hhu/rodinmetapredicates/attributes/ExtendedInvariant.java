@@ -10,12 +10,12 @@ import org.rodinp.core.RodinCore;
 
 import de.stups.hhu.rodinmetapredicates.Activator;
 
-public class GlobalGuard extends EventBElement implements IPredicateElement,
-		ICommentedElement {
-	public static IInternalElementType<GlobalGuard> ELEMENT_TYPE = RodinCore
-			.getInternalElementType(Activator.PLUGIN_ID + ".globalGuard");
+public class ExtendedInvariant extends EventBElement implements
+		IPredicateElement, ICommentedElement {
+	public static IInternalElementType<ExtendedInvariant> ELEMENT_TYPE = RodinCore
+			.getInternalElementType(Activator.PLUGIN_ID + ".extendedInvariant");
 
-	public GlobalGuard(String name, IRodinElement parent) {
+	public ExtendedInvariant(String name, IRodinElement parent) {
 		super(name, parent);
 	}
 

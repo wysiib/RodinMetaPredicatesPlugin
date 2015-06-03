@@ -13,11 +13,11 @@ import org.rodinp.core.IRodinElement;
 import org.rodinp.core.IRodinFile;
 
 import de.stups.hhu.rodinmetapredicates.Activator;
-import de.stups.hhu.rodinmetapredicates.attributes.GlobalGuard;
+import de.stups.hhu.rodinmetapredicates.attributes.ExtendedInvariant;
 
-public class GlobalGuardProcessor extends SCProcessorModule {
-	public static final IModuleType<GlobalGuardProcessor> MODULE_TYPE = SCCore
-			.getModuleType(Activator.PLUGIN_ID + ".globalGuardProcessor");
+public class ExtendedInvariantProcessor extends SCProcessorModule {
+	public static final IModuleType<ExtendedInvariantProcessor> MODULE_TYPE = SCCore
+			.getModuleType(Activator.PLUGIN_ID + ".extendedInvariantProcessor");
 
 	@Override
 	public void process(IRodinElement element, IInternalElement target,
@@ -31,13 +31,13 @@ public class GlobalGuardProcessor extends SCProcessorModule {
 
 		ISCMachineRoot scMachineRoot = (ISCMachineRoot) target;
 
-		GlobalGuard[] globalGuards = machineRoot
-				.getChildrenOfType(GlobalGuard.ELEMENT_TYPE);
+		ExtendedInvariant[] globalGuards = machineRoot
+				.getChildrenOfType(ExtendedInvariant.ELEMENT_TYPE);
 
 		if (globalGuards.length == 0)
 			return;
 
-		for (GlobalGuard g : globalGuards) {
+		for (ExtendedInvariant g : globalGuards) {
 			System.out.println("global guard:" + g);
 		}
 

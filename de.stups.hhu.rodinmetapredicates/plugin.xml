@@ -4,8 +4,8 @@
    <extension
          point="org.rodinp.core.internalElementTypes">
       <internalElementType
-            class="de.stups.hhu.rodinmetapredicates.attributes.GlobalGuard"
-            id="globalGuard"
+            class="de.stups.hhu.rodinmetapredicates.attributes.ExtendedInvariant"
+            id="extendedInvariant"
             name="Event-B Global Guard Element">
       </internalElementType>
       <internalElementType
@@ -19,7 +19,7 @@
       <relationship
             parentTypeId="org.eventb.core.machineFile">
          <childType
-               typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+               typeId="de.stups.hhu.rodinmetapredicates.extendedInvariant">
          </childType>
       </relationship>
       <relationship
@@ -35,7 +35,7 @@
             defaultColumn="0"
             imagePath="icons/sample.gif"
             prefix="EXTENDED INVARIANTS"
-            typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+            typeId="de.stups.hhu.rodinmetapredicates.extendedInvariant">
       </element>
       <element
             defaultColumn="0"
@@ -44,7 +44,7 @@
             typeId="de.stups.hhu.rodinmetapredicates.extendedGuard">
       </element>
       <attributeRelation
-            elementTypeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+            elementTypeId="de.stups.hhu.rodinmetapredicates.extendedInvariant">
          <attributeReference
                descriptionId="org.eventb.ui.predicate">
          </attributeReference>
@@ -56,7 +56,7 @@
             parentTypeId="org.eventb.core.machineFile">
          <childType
                priority="35"
-               typeId="de.stups.hhu.rodinmetapredicates.globalGuard">
+               typeId="de.stups.hhu.rodinmetapredicates.extendedInvariant">
          </childType>
       </childRelation>
       <attributeRelation
@@ -85,7 +85,7 @@
                id="de.stups.hhu.rodinmetapredicates.extendedGuardProcessor">
          </scModule>
          <scModule
-               id="de.stups.hhu.rodinmetapredicates.globalGuardProcessor">
+               id="de.stups.hhu.rodinmetapredicates.extendedInvariantProcessor">
          </scModule>
       </configuration>
    </extension>
@@ -93,9 +93,9 @@
          id="scMachineModuleTypes"
          point="org.eventb.core.scModuleTypes">
       <processorType
-            class="de.stups.hhu.rodinmetapredicates.sc.GlobalGuardProcessor"
-            id="globalGuardProcessor"
-            name="globalGuardProcessor"
+            class="de.stups.hhu.rodinmetapredicates.sc.ExtendedInvariantProcessor"
+            id="extendedInvariantProcessor"
+            name="extendedInvariantProcessor"
             parent="org.eventb.core.machineModule">
              <prereq
                id="org.eventb.core.machineEventModule">
