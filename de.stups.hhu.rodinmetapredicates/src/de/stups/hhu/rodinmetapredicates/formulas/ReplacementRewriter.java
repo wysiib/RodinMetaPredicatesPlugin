@@ -20,23 +20,29 @@ import org.rodinp.core.RodinDBException;
 
 public class ReplacementRewriter extends DefaultRewriter {
 	private final ISCMachineRoot scMachineRoot;
+	private boolean rewriteFailed = false;
 
 	public ReplacementRewriter(ISCMachineRoot scMachineRoot) {
 		super(false);
 		this.scMachineRoot = scMachineRoot;
 	}
 
+	public boolean rewriteFailed() {
+		return rewriteFailed;
+	}
+
 	@Override
 	public Predicate rewrite(ExtendedPredicate arg0) {
-		IPredicateExtension extension = arg0.getExtension();
-		// there should be one child expression, namely the set of events
-		Set<String> setOfEvents = new HashSet<String>();
-		Expression[] childExpressions = arg0.getChildExpressions();
-		for (Expression ex : ((SetExtension) childExpressions[0]).getMembers()) {
-			setOfEvents.add(ex.toString());
-		}
-
 		try {
+			IPredicateExtension extension = arg0.getExtension();
+			// there should be one child expression, namely the set of events
+			Set<String> setOfEvents = new HashSet<String>();
+			Expression[] childExpressions = arg0.getChildExpressions();
+			for (Expression ex : ((SetExtension) childExpressions[0])
+					.getMembers()) {
+				setOfEvents.add(ex.toString());
+			}
+
 			if ("controller".equals(extension.getSyntaxSymbol())) {
 				return controllerPredicate(setOfEvents, arg0.getFactory());
 			}
@@ -49,8 +55,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 			if ("enabled".equals(extension.getSyntaxSymbol())) {
 				return enabledPredicate(setOfEvents, arg0.getFactory());
 			}
-		} catch (CoreException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			rewriteFailed = true;
 		}
 
 		return arg0;

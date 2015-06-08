@@ -26,6 +26,7 @@ import org.rodinp.core.RodinDBException;
 import de.stups.hhu.rodinmetapredicates.Activator;
 import de.stups.hhu.rodinmetapredicates.attributes.ExtendedGuard;
 import de.stups.hhu.rodinmetapredicates.errormarkers.MetaPredicateNotParsedMarker;
+import de.stups.hhu.rodinmetapredicates.errormarkers.ReplacementFailedMarker;
 import de.stups.hhu.rodinmetapredicates.formulas.Controller;
 import de.stups.hhu.rodinmetapredicates.formulas.Deadlock;
 import de.stups.hhu.rodinmetapredicates.formulas.Deterministic;
@@ -69,10 +70,17 @@ public class ExtendedGuardProcessor extends SCProcessorModule {
 					IParseResult parsed = ff.parsePredicate(
 							eGuard.getPredicateString(), null);
 					if (parsed.getProblems().isEmpty()) {
-						Predicate rewritten = parsed
-								.getParsedPredicate()
-								.rewrite(new ReplacementRewriter(scMachineRoot));
 
+						ReplacementRewriter rr = new ReplacementRewriter(
+								scMachineRoot);
+						Predicate rewritten = parsed.getParsedPredicate()
+								.rewrite(rr);
+
+						if (rr.rewriteFailed()) {
+							eGuard.createProblemMarker(new ReplacementFailedMarker(
+									eGuard.getPredicateString()));
+							return;
+						}
 						ISCGuard newGuard = scEvt.createChild(
 								ISCGuard.ELEMENT_TYPE, null, monitor);
 						newGuard.setLabel(getNextLabel(), monitor);

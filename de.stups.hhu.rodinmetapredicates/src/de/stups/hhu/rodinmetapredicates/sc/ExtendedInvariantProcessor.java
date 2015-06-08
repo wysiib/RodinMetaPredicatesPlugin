@@ -23,6 +23,7 @@ import org.rodinp.core.IRodinFile;
 import de.stups.hhu.rodinmetapredicates.Activator;
 import de.stups.hhu.rodinmetapredicates.attributes.ExtendedInvariant;
 import de.stups.hhu.rodinmetapredicates.errormarkers.MetaPredicateNotParsedMarker;
+import de.stups.hhu.rodinmetapredicates.errormarkers.ReplacementFailedMarker;
 import de.stups.hhu.rodinmetapredicates.formulas.Controller;
 import de.stups.hhu.rodinmetapredicates.formulas.Deadlock;
 import de.stups.hhu.rodinmetapredicates.formulas.Deterministic;
@@ -59,8 +60,14 @@ public class ExtendedInvariantProcessor extends SCProcessorModule {
 			IParseResult parsed = ff.parsePredicate(ei.getPredicateString(),
 					null);
 			if (parsed.getProblems().isEmpty()) {
-				Predicate rewritten = parsed.getParsedPredicate().rewrite(
-						new ReplacementRewriter(scMachineRoot));
+				ReplacementRewriter rr = new ReplacementRewriter(scMachineRoot);
+				Predicate rewritten = parsed.getParsedPredicate().rewrite(rr);
+
+				if (rr.rewriteFailed()) {
+					ei.createProblemMarker(new ReplacementFailedMarker(ei
+							.getPredicateString()));
+					return;
+				}
 
 				ISCInvariant newInvariant = scMachineRoot.createChild(
 						ISCInvariant.ELEMENT_TYPE, null, monitor);
