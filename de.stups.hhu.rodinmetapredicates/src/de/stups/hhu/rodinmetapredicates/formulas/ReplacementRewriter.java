@@ -1,7 +1,9 @@
 package de.stups.hhu.rodinmetapredicates.formulas;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eventb.core.ISCEvent;
 import org.eventb.core.ISCGuard;
@@ -9,6 +11,7 @@ import org.eventb.core.ISCMachineRoot;
 import org.eventb.core.ast.DefaultRewriter;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedPredicate;
+import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.SetExtension;
@@ -26,21 +29,27 @@ public class ReplacementRewriter extends DefaultRewriter {
 	@Override
 	public Predicate rewrite(ExtendedPredicate arg0) {
 		IPredicateExtension extension = arg0.getExtension();
+		// there should be one child expression, namely the set of events
+		Set<String> setOfEvents = new HashSet<String>();
+		Expression[] childExpressions = arg0.getChildExpressions();
+		for (Expression ex : ((SetExtension) childExpressions[0]).getMembers()) {
+			setOfEvents.add(ex.toString());
+		}
 
 		try {
 			if ("controller".equals(extension.getSyntaxSymbol())) {
-				return controllerPredicate(arg0);
+				return controllerPredicate(setOfEvents, arg0.getFactory());
 			}
 			if ("deadlock".equals(extension.getSyntaxSymbol())) {
 
-				return deadlockPredicate(arg0);
+				return deadlockPredicate(setOfEvents, arg0.getFactory());
 
 			}
 			if ("deterministic".equals(extension.getSyntaxSymbol())) {
-				return deterministicPredicate(arg0);
+				return deterministicPredicate(setOfEvents, arg0.getFactory());
 			}
 			if ("enabled".equals(extension.getSyntaxSymbol())) {
-				return enabledPredicate(arg0);
+				return enabledPredicate(setOfEvents, arg0.getFactory());
 			}
 		} catch (RodinDBException e) {
 			e.printStackTrace();
@@ -49,20 +58,18 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return arg0;
 	}
 
-	private Predicate controllerPredicate(ExtendedPredicate arg0) {
+	private Predicate controllerPredicate(Set<String> setOfEvents,
+			FormulaFactory ff) {
 		throw new UnsupportedOperationException();
 	}
 
-	private Predicate deadlockPredicate(ExtendedPredicate arg0)
-			throws RodinDBException {
-		// there should be one child expression, namely the set of events
-		Expression[] childExpressions = arg0.getChildExpressions();
-		SetExtension setOfEvents = (SetExtension) childExpressions[0];
+	private Predicate deadlockPredicate(Set<String> setOfEvents,
+			FormulaFactory ff) throws RodinDBException {
 		List<String> subFormulas = new ArrayList<String>();
-		for (Expression expression : setOfEvents.getMembers()) {
+		for (String evt : setOfEvents) {
 			List<String> guardPredicates = new ArrayList<String>();
 			ISCEvent scEvent;
-			scEvent = getSCEvent(expression.toString());
+			scEvent = getSCEvent(evt);
 			ISCGuard[] guards = scEvent
 					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
 			for (ISCGuard g : guards) {
@@ -75,31 +82,27 @@ public class ReplacementRewriter extends DefaultRewriter {
 		}
 
 		if (subFormulas.isEmpty()) {
-			return arg0.getFactory()
-					.makeLiteralPredicate(Predicate.BTRUE, null);
+			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
 			String formula = conjoinStrings(subFormulas);
 
-			IParseResult parsePredicate = arg0.getFactory().parsePredicate(
-					formula, null);
+			IParseResult parsePredicate = ff.parsePredicate(formula, null);
 
 			return parsePredicate.getParsedPredicate();
 		}
 	}
 
-	private Predicate deterministicPredicate(ExtendedPredicate arg0) {
+	private Predicate deterministicPredicate(Set<String> setOfEvents,
+			FormulaFactory ff) {
 		throw new UnsupportedOperationException();
 	}
 
-	private Predicate enabledPredicate(ExtendedPredicate arg0)
-			throws RodinDBException {
-		// there should be one child expression, namely the set of events
-		Expression[] childExpressions = arg0.getChildExpressions();
-		SetExtension setOfEvents = (SetExtension) childExpressions[0];
+	private Predicate enabledPredicate(Set<String> setOfEvents,
+			FormulaFactory ff) throws RodinDBException {
 		List<String> subFormulas = new ArrayList<String>();
-		for (Expression expression : setOfEvents.getMembers()) {
+		for (String evt : setOfEvents) {
 			ISCEvent scEvent;
-			scEvent = getSCEvent(expression.toString());
+			scEvent = getSCEvent(evt);
 			ISCGuard[] guards = scEvent
 					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
 			for (ISCGuard g : guards) {
@@ -109,13 +112,11 @@ public class ReplacementRewriter extends DefaultRewriter {
 		}
 
 		if (subFormulas.isEmpty()) {
-			return arg0.getFactory()
-					.makeLiteralPredicate(Predicate.BTRUE, null);
+			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
 			String formula = conjoinStrings(subFormulas);
 
-			IParseResult parsePredicate = arg0.getFactory().parsePredicate(
-					formula, null);
+			IParseResult parsePredicate = ff.parsePredicate(formula, null);
 
 			return parsePredicate.getParsedPredicate();
 		}
