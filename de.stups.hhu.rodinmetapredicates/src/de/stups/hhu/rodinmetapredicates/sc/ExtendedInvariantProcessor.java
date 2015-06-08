@@ -64,6 +64,7 @@ public class ExtendedInvariantProcessor extends SCProcessorModule {
 				ISCInvariant newInvariant = scMachineRoot.createChild(
 						ISCInvariant.ELEMENT_TYPE, null, monitor);
 				newInvariant.setLabel(getNextLabel(), monitor);
+				newInvariant.setPredicate(rewritten, monitor);
 				newInvariant.setPredicateString(
 						rewritten.toStringFullyParenthesized(), monitor);
 				newInvariant.setSource(ei, monitor);

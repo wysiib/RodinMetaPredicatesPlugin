@@ -73,6 +73,7 @@ public class ExtendedGuardProcessor extends SCProcessorModule {
 					ISCGuard newGuard = scEvt.createChild(
 							ISCGuard.ELEMENT_TYPE, null, monitor);
 					newGuard.setLabel(getNextLabel(), monitor);
+					newGuard.setPredicate(rewritten, monitor);
 					newGuard.setPredicateString(
 							rewritten.toStringFullyParenthesized(), monitor);
 					newGuard.setSource(eGuard, monitor);
