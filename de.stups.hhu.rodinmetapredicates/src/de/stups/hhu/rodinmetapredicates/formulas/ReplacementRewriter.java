@@ -59,8 +59,30 @@ public class ReplacementRewriter extends DefaultRewriter {
 	}
 
 	private Predicate controllerPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) {
-		throw new UnsupportedOperationException();
+			FormulaFactory ff) throws RodinDBException {
+		List<String> subPredicates = new ArrayList<String>();
+		for (String evt : setOfEvents) {
+			Set<String> setOfEventsWithoutEvt = new HashSet<String>();
+			setOfEventsWithoutEvt.addAll(setOfEvents);
+			setOfEventsWithoutEvt.remove(evt);
+
+			Set<String> setOnlyE = new HashSet<String>();
+			setOnlyE.add(evt);
+
+			Predicate deadlock = deadlockPredicate(setOfEventsWithoutEvt, ff);
+			Predicate enabled = enabledPredicate(setOnlyE, ff);
+			subPredicates.add(enabled + " & " + deadlock);
+		}
+
+		if (subPredicates.isEmpty()) {
+			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
+		} else {
+			String formula = disjoinStrings(subPredicates);
+
+			IParseResult parsePredicate = ff.parsePredicate(formula, null);
+
+			return parsePredicate.getParsedPredicate();
+		}
 	}
 
 	private Predicate deadlockPredicate(Set<String> setOfEvents,
@@ -93,8 +115,14 @@ public class ReplacementRewriter extends DefaultRewriter {
 	}
 
 	private Predicate deterministicPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) {
-		throw new UnsupportedOperationException();
+			FormulaFactory ff) throws RodinDBException {
+		Predicate controller = controllerPredicate(setOfEvents, ff);
+		Predicate deadlock = deadlockPredicate(setOfEvents, ff);
+
+		IParseResult parsePredicate = ff.parsePredicate(controller + " or "
+				+ deadlock, null);
+
+		return parsePredicate.getParsedPredicate();
 	}
 
 	private Predicate enabledPredicate(Set<String> setOfEvents,
@@ -126,6 +154,15 @@ public class ReplacementRewriter extends DefaultRewriter {
 		StringBuilder result = new StringBuilder(subFormulas.get(0));
 		for (int i = 1; i < subFormulas.size(); i++) {
 			result.append(" & ");
+			result.append(subFormulas.get(i));
+		}
+		return result.toString();
+	}
+
+	private String disjoinStrings(List<String> subFormulas) {
+		StringBuilder result = new StringBuilder(subFormulas.get(0));
+		for (int i = 1; i < subFormulas.size(); i++) {
+			result.append(" or ");
 			result.append(subFormulas.get(i));
 		}
 		return result.toString();
