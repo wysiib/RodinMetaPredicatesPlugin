@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eventb.core.ISCEvent;
 import org.eventb.core.ISCGuard;
 import org.eventb.core.ISCMachineRoot;
@@ -12,7 +13,6 @@ import org.eventb.core.ast.DefaultRewriter;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedPredicate;
 import org.eventb.core.ast.FormulaFactory;
-import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.SetExtension;
 import org.eventb.core.ast.extension.IPredicateExtension;
@@ -41,9 +41,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 				return controllerPredicate(setOfEvents, arg0.getFactory());
 			}
 			if ("deadlock".equals(extension.getSyntaxSymbol())) {
-
 				return deadlockPredicate(setOfEvents, arg0.getFactory());
-
 			}
 			if ("deterministic".equals(extension.getSyntaxSymbol())) {
 				return deterministicPredicate(setOfEvents, arg0.getFactory());
@@ -51,7 +49,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 			if ("enabled".equals(extension.getSyntaxSymbol())) {
 				return enabledPredicate(setOfEvents, arg0.getFactory());
 			}
-		} catch (RodinDBException e) {
+		} catch (CoreException e) {
 			e.printStackTrace();
 		}
 
@@ -59,8 +57,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 	}
 
 	private Predicate controllerPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws RodinDBException {
-		List<String> subPredicates = new ArrayList<String>();
+			FormulaFactory ff) throws CoreException {
+		List<Predicate> subPredicates = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
 			Set<String> setOfEventsWithoutEvt = new HashSet<String>();
 			setOfEventsWithoutEvt.addAll(setOfEvents);
@@ -71,70 +69,70 @@ public class ReplacementRewriter extends DefaultRewriter {
 
 			Predicate deadlock = deadlockPredicate(setOfEventsWithoutEvt, ff);
 			Predicate enabled = enabledPredicate(setOnlyE, ff);
-			subPredicates.add(enabled + " & " + deadlock);
+			subPredicates.add(ff.makeBinaryPredicate(Predicate.LAND, enabled,
+					deadlock, null));
 		}
 
 		if (subPredicates.isEmpty()) {
 			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
-			String formula = disjoinStrings(subPredicates);
-
-			IParseResult parsePredicate = ff.parsePredicate(formula, null);
-
-			return parsePredicate.getParsedPredicate();
+			return join(subPredicates, ff, Predicate.LOR);
 		}
 	}
 
+	private Predicate join(List<Predicate> subPredicates, FormulaFactory ff,
+			int tag) {
+		if (subPredicates.size() == 1) {
+			return subPredicates.get(0);
+		}
+		return ff.makeAssociativePredicate(tag, subPredicates, null);
+	}
+
 	private Predicate deadlockPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws RodinDBException {
-		List<String> subFormulas = new ArrayList<String>();
+			FormulaFactory ff) throws CoreException {
+		List<Predicate> subFormulas = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
-			List<String> guardPredicates = new ArrayList<String>();
+			List<Predicate> guardPredicates = new ArrayList<Predicate>();
 			ISCEvent scEvent;
 			scEvent = getSCEvent(evt);
 			ISCGuard[] guards = scEvent
 					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
 			for (ISCGuard g : guards) {
-				guardPredicates.add(g.getPredicateString());
+				guardPredicates.add(g.getPredicate(ff.makeTypeEnvironment()));
 			}
 
 			// \u00ac = logical not
-			subFormulas.add("(\u00ac " + conjoinStrings(guardPredicates) + ")");
-
+			Predicate joinedGuards = join(guardPredicates, ff, Predicate.LAND);
+			subFormulas.add(ff.makeUnaryPredicate(Predicate.NOT, joinedGuards,
+					null));
 		}
 
 		if (subFormulas.isEmpty()) {
 			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
-			String formula = conjoinStrings(subFormulas);
-
-			IParseResult parsePredicate = ff.parsePredicate(formula, null);
-
-			return parsePredicate.getParsedPredicate();
+			return join(subFormulas, ff, Predicate.LAND);
 		}
 	}
 
 	private Predicate deterministicPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws RodinDBException {
+			FormulaFactory ff) throws CoreException {
 		Predicate controller = controllerPredicate(setOfEvents, ff);
 		Predicate deadlock = deadlockPredicate(setOfEvents, ff);
 
-		IParseResult parsePredicate = ff.parsePredicate(controller + " or "
-				+ deadlock, null);
-
-		return parsePredicate.getParsedPredicate();
+		return ff
+				.makeBinaryPredicate(Predicate.LOR, controller, deadlock, null);
 	}
 
 	private Predicate enabledPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws RodinDBException {
-		List<String> subFormulas = new ArrayList<String>();
+			FormulaFactory ff) throws CoreException {
+		List<Predicate> subFormulas = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
 			ISCEvent scEvent;
 			scEvent = getSCEvent(evt);
 			ISCGuard[] guards = scEvent
 					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
 			for (ISCGuard g : guards) {
-				subFormulas.add(g.getPredicateString());
+				subFormulas.add(g.getPredicate(ff.makeTypeEnvironment()));
 			}
 
 		}
@@ -142,30 +140,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 		if (subFormulas.isEmpty()) {
 			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
-			String formula = conjoinStrings(subFormulas);
-
-			IParseResult parsePredicate = ff.parsePredicate(formula, null);
-
-			return parsePredicate.getParsedPredicate();
+			return join(subFormulas, ff, Predicate.LAND);
 		}
-	}
-
-	private String conjoinStrings(List<String> subFormulas) {
-		StringBuilder result = new StringBuilder(subFormulas.get(0));
-		for (int i = 1; i < subFormulas.size(); i++) {
-			result.append(" & ");
-			result.append(subFormulas.get(i));
-		}
-		return result.toString();
-	}
-
-	private String disjoinStrings(List<String> subFormulas) {
-		StringBuilder result = new StringBuilder(subFormulas.get(0));
-		for (int i = 1; i < subFormulas.size(); i++) {
-			result.append(" or ");
-			result.append(subFormulas.get(i));
-		}
-		return result.toString();
 	}
 
 	private ISCEvent getSCEvent(String label) throws RodinDBException {

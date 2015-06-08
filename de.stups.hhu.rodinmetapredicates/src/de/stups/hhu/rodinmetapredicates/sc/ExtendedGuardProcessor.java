@@ -67,7 +67,6 @@ public class ExtendedGuardProcessor extends SCProcessorModule {
 				for (ExtendedGuard eGuard : eGuards) {
 					IParseResult parsed = ff.parsePredicate(
 							eGuard.getPredicateString(), null);
-					System.out.println(parsed.getParsedPredicate());
 					Predicate rewritten = parsed.getParsedPredicate().rewrite(
 							new ReplacementRewriter(scMachineRoot));
 
