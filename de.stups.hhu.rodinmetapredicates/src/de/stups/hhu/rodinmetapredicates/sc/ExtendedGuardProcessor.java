@@ -25,6 +25,7 @@ import org.rodinp.core.RodinDBException;
 
 import de.stups.hhu.rodinmetapredicates.Activator;
 import de.stups.hhu.rodinmetapredicates.attributes.ExtendedGuard;
+import de.stups.hhu.rodinmetapredicates.errormarkers.MetaPredicateNotParsedMarker;
 import de.stups.hhu.rodinmetapredicates.formulas.Controller;
 import de.stups.hhu.rodinmetapredicates.formulas.Deadlock;
 import de.stups.hhu.rodinmetapredicates.formulas.Deterministic;
@@ -67,16 +68,22 @@ public class ExtendedGuardProcessor extends SCProcessorModule {
 				for (ExtendedGuard eGuard : eGuards) {
 					IParseResult parsed = ff.parsePredicate(
 							eGuard.getPredicateString(), null);
-					Predicate rewritten = parsed.getParsedPredicate().rewrite(
-							new ReplacementRewriter(scMachineRoot));
+					if (parsed.getProblems().isEmpty()) {
+						Predicate rewritten = parsed
+								.getParsedPredicate()
+								.rewrite(new ReplacementRewriter(scMachineRoot));
 
-					ISCGuard newGuard = scEvt.createChild(
-							ISCGuard.ELEMENT_TYPE, null, monitor);
-					newGuard.setLabel(getNextLabel(), monitor);
-					newGuard.setPredicate(rewritten, monitor);
-					newGuard.setPredicateString(
-							rewritten.toStringFullyParenthesized(), monitor);
-					newGuard.setSource(eGuard, monitor);
+						ISCGuard newGuard = scEvt.createChild(
+								ISCGuard.ELEMENT_TYPE, null, monitor);
+						newGuard.setLabel(getNextLabel(), monitor);
+						newGuard.setPredicate(rewritten, monitor);
+						newGuard.setPredicateString(
+								rewritten.toStringFullyParenthesized(), monitor);
+						newGuard.setSource(eGuard, monitor);
+					} else {
+						eGuard.createProblemMarker(new MetaPredicateNotParsedMarker(
+								eGuard.getPredicateString()));
+					}
 				}
 			}
 		}

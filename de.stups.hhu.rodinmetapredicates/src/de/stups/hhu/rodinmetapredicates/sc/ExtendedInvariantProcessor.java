@@ -22,6 +22,7 @@ import org.rodinp.core.IRodinFile;
 
 import de.stups.hhu.rodinmetapredicates.Activator;
 import de.stups.hhu.rodinmetapredicates.attributes.ExtendedInvariant;
+import de.stups.hhu.rodinmetapredicates.errormarkers.MetaPredicateNotParsedMarker;
 import de.stups.hhu.rodinmetapredicates.formulas.Controller;
 import de.stups.hhu.rodinmetapredicates.formulas.Deadlock;
 import de.stups.hhu.rodinmetapredicates.formulas.Deterministic;
@@ -69,7 +70,8 @@ public class ExtendedInvariantProcessor extends SCProcessorModule {
 						rewritten.toStringFullyParenthesized(), monitor);
 				newInvariant.setSource(ei, monitor);
 			} else {
-				// TODO create problem marker!
+				ei.createProblemMarker(new MetaPredicateNotParsedMarker(ei
+						.getPredicateString()));
 			}
 		}
 
