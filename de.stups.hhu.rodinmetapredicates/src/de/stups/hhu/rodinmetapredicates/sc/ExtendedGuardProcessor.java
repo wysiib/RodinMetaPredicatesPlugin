@@ -88,6 +88,7 @@ public class ExtendedGuardProcessor extends SCProcessorModule {
 						newGuard.setPredicateString(
 								rewritten.toStringFullyParenthesized(), monitor);
 						newGuard.setSource(eGuard, monitor);
+						newGuard.setTheorem(eGuard.isTheorem(), monitor);
 					} else {
 						eGuard.createProblemMarker(new MetaPredicateNotParsedMarker(
 								eGuard.getPredicateString()));

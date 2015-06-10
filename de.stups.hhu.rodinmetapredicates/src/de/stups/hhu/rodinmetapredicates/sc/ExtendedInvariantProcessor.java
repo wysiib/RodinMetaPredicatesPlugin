@@ -76,6 +76,7 @@ public class ExtendedInvariantProcessor extends SCProcessorModule {
 				newInvariant.setPredicateString(
 						rewritten.toStringFullyParenthesized(), monitor);
 				newInvariant.setSource(ei, monitor);
+				newInvariant.setTheorem(ei.isTheorem(), monitor);
 			} else {
 				ei.createProblemMarker(new MetaPredicateNotParsedMarker(ei
 						.getPredicateString()));

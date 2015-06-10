@@ -1,7 +1,7 @@
 package de.stups.hhu.rodinmetapredicates.attributes;
 
 import org.eventb.core.ICommentedElement;
-import org.eventb.core.IPredicateElement;
+import org.eventb.core.IDerivedPredicateElement;
 import org.eventb.core.basis.EventBElement;
 import org.rodinp.core.IInternalElement;
 import org.rodinp.core.IInternalElementType;
@@ -11,7 +11,7 @@ import org.rodinp.core.RodinCore;
 import de.stups.hhu.rodinmetapredicates.Activator;
 
 public class ExtendedInvariant extends EventBElement implements
-		IPredicateElement, ICommentedElement {
+		IDerivedPredicateElement, ICommentedElement {
 	public static IInternalElementType<ExtendedInvariant> ELEMENT_TYPE = RodinCore
 			.getInternalElementType(Activator.PLUGIN_ID + ".extendedInvariant");
 
