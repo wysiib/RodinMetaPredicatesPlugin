@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Extended Guards Language for Rodin
+Bundle-Name: Extended Predicate Language for Rodin
 Bundle-SymbolicName: de.stups.hhu.rodinmetapredicates;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: de.stups.hhu.rodinmetapredicates.Activator
@@ -12,3 +12,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eventb.core.ast;bundle-version="3.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Bundle-Vendor: HHU Düsseldorf STUPS Group
