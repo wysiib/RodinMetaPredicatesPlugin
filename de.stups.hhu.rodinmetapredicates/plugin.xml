@@ -6,7 +6,7 @@
       <internalElementType
             class="de.stups.hhu.rodinmetapredicates.attributes.ExtendedInvariant"
             id="extendedInvariant"
-            name="Event-B Global Guard Element">
+            name="Event-B Extended Invariant">
       </internalElementType>
       <internalElementType
             class="de.stups.hhu.rodinmetapredicates.attributes.ExtendedGuard"
