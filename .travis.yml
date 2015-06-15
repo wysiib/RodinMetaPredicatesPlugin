@@ -1,4 +1,6 @@
 language: java
+jdk:
+  - oraclejdk7
 script: mvn -f de.stups.hhu.rodinmetapredicates.parent/pom.xml clean verify
 after_success: find de.stups.hhu.rodinmetapredicates.repository/target/repository/
   -type f -exec curl -u $FTP_USER:$FTP_PASS --ftp-create-dirs -T {} ftp://cobra.cs.uni-duesseldorf.de/upload/{}
