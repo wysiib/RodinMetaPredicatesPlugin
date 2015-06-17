@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eventb.core.ISCEvent;
 import org.eventb.core.ISCGuard;
 import org.eventb.core.ISCMachineRoot;
+import org.eventb.core.ast.BoundIdentDecl;
 import org.eventb.core.ast.DefaultRewriter;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedPredicate;
@@ -38,22 +39,25 @@ public class ReplacementRewriter extends DefaultRewriter {
 			// there should be one child expression, namely the set of events
 			Set<String> setOfEvents = new HashSet<String>();
 			Expression[] childExpressions = arg0.getChildExpressions();
+			FormulaFactory ff = arg0.getFactory();
 			for (Expression ex : ((SetExtension) childExpressions[0])
 					.getMembers()) {
 				setOfEvents.add(ex.toString());
 			}
 
 			if ("controller".equals(extension.getSyntaxSymbol())) {
-				return controllerPredicate(setOfEvents, arg0.getFactory());
+				return bindFreeVariables(controllerPredicate(setOfEvents, ff),
+						ff);
 			}
 			if ("deadlock".equals(extension.getSyntaxSymbol())) {
-				return deadlockPredicate(setOfEvents, arg0.getFactory());
+				return bindFreeVariables(deadlockPredicate(setOfEvents, ff), ff);
 			}
 			if ("deterministic".equals(extension.getSyntaxSymbol())) {
-				return deterministicPredicate(setOfEvents, arg0.getFactory());
+				return bindFreeVariables(
+						deterministicPredicate(setOfEvents, ff), ff);
 			}
 			if ("enabled".equals(extension.getSyntaxSymbol())) {
-				return enabledPredicate(setOfEvents, arg0.getFactory());
+				return bindFreeVariables(enabledPredicate(setOfEvents, ff), ff);
 			}
 		} catch (Exception e) {
 			rewriteFailed = true;
@@ -157,5 +161,12 @@ public class ReplacementRewriter extends DefaultRewriter {
 			}
 		}
 		return null;
+	}
+
+	private Predicate bindFreeVariables(Predicate p, FormulaFactory ff) {
+		List<BoundIdentDecl> theBoundOnes = new ArrayList<BoundIdentDecl>();
+		p = p.bindAllFreeIdents(theBoundOnes);
+		return ff.makeQuantifiedPredicate(Predicate.EXISTS, theBoundOnes, p,
+				null);
 	}
 }
