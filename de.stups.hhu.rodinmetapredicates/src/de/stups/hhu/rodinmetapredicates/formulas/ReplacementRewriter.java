@@ -9,11 +9,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eventb.core.ISCEvent;
 import org.eventb.core.ISCGuard;
 import org.eventb.core.ISCMachineRoot;
+import org.eventb.core.ISCParameter;
 import org.eventb.core.ast.BoundIdentDecl;
 import org.eventb.core.ast.DefaultRewriter;
 import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedPredicate;
 import org.eventb.core.ast.FormulaFactory;
+import org.eventb.core.ast.FreeIdentifier;
 import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.SetExtension;
 import org.eventb.core.ast.extension.IPredicateExtension;
@@ -46,18 +48,16 @@ public class ReplacementRewriter extends DefaultRewriter {
 			}
 
 			if ("controller".equals(extension.getSyntaxSymbol())) {
-				return bindFreeVariables(controllerPredicate(setOfEvents, ff),
-						ff);
+				return controllerPredicate(setOfEvents, ff);
 			}
 			if ("deadlock".equals(extension.getSyntaxSymbol())) {
-				return bindFreeVariables(deadlockPredicate(setOfEvents, ff), ff);
+				return deadlockPredicate(setOfEvents, ff);
 			}
 			if ("deterministic".equals(extension.getSyntaxSymbol())) {
-				return bindFreeVariables(
-						deterministicPredicate(setOfEvents, ff), ff);
+				return deterministicPredicate(setOfEvents, ff);
 			}
 			if ("enabled".equals(extension.getSyntaxSymbol())) {
-				return bindFreeVariables(enabledPredicate(setOfEvents, ff), ff);
+				return enabledPredicate(setOfEvents, ff);
 			}
 		} catch (Exception e) {
 			rewriteFailed = true;
@@ -101,6 +101,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 	private Predicate deadlockPredicate(Set<String> setOfEvents,
 			FormulaFactory ff) throws CoreException {
 		List<Predicate> subFormulas = new ArrayList<Predicate>();
+		List<Predicate> eventsFormulas = new ArrayList<Predicate>();
+
 		for (String evt : setOfEvents) {
 			List<Predicate> guardPredicates = new ArrayList<Predicate>();
 			ISCEvent scEvent;
@@ -111,16 +113,18 @@ public class ReplacementRewriter extends DefaultRewriter {
 				guardPredicates.add(g.getPredicate(ff.makeTypeEnvironment()));
 			}
 
-			// \u00ac = logical not
 			Predicate joinedGuards = join(guardPredicates, ff, Predicate.LAND);
 			subFormulas.add(ff.makeUnaryPredicate(Predicate.NOT, joinedGuards,
 					null));
+			Predicate allSubs = join(subFormulas, ff, Predicate.LAND);
+			eventsFormulas.add(bindFreeVariables(allSubs,
+					scEvent.getSCParameters(), ff));
 		}
 
-		if (subFormulas.isEmpty()) {
+		if (eventsFormulas.isEmpty()) {
 			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
-			return join(subFormulas, ff, Predicate.LAND);
+			return join(eventsFormulas, ff, Predicate.LAND);
 		}
 	}
 
@@ -135,8 +139,9 @@ public class ReplacementRewriter extends DefaultRewriter {
 
 	private Predicate enabledPredicate(Set<String> setOfEvents,
 			FormulaFactory ff) throws CoreException {
-		List<Predicate> subFormulas = new ArrayList<Predicate>();
+		List<Predicate> eventsFormulas = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
+			List<Predicate> subFormulas = new ArrayList<Predicate>();
 			ISCEvent scEvent;
 			scEvent = getSCEvent(evt);
 			ISCGuard[] guards = scEvent
@@ -144,13 +149,15 @@ public class ReplacementRewriter extends DefaultRewriter {
 			for (ISCGuard g : guards) {
 				subFormulas.add(g.getPredicate(ff.makeTypeEnvironment()));
 			}
-
+			Predicate allSubs = join(subFormulas, ff, Predicate.LAND);
+			eventsFormulas.add(bindFreeVariables(allSubs,
+					scEvent.getSCParameters(), ff));
 		}
 
-		if (subFormulas.isEmpty()) {
+		if (eventsFormulas.isEmpty()) {
 			return ff.makeLiteralPredicate(Predicate.BTRUE, null);
 		} else {
-			return join(subFormulas, ff, Predicate.LAND);
+			return join(eventsFormulas, ff, Predicate.LAND);
 		}
 	}
 
@@ -163,10 +170,24 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return null;
 	}
 
-	private Predicate bindFreeVariables(Predicate p, FormulaFactory ff) {
-		List<BoundIdentDecl> theBoundOnes = new ArrayList<BoundIdentDecl>();
-		p = p.bindAllFreeIdents(theBoundOnes);
-		return ff.makeQuantifiedPredicate(Predicate.EXISTS, theBoundOnes, p,
-				null);
+	private Predicate bindFreeVariables(Predicate p,
+			ISCParameter[] iscParameters, FormulaFactory ff)
+			throws RodinDBException {
+		List<FreeIdentifier> idsToBind = new ArrayList<FreeIdentifier>();
+		List<BoundIdentDecl> boundDecls = new ArrayList<BoundIdentDecl>();
+
+		for (FreeIdentifier freeIdentifier : p.getFreeIdentifiers()) {
+			for (ISCParameter param : iscParameters) {
+				if (freeIdentifier.getName()
+						.equals(param.getIdentifierString())) {
+
+					idsToBind.add(freeIdentifier);
+					boundDecls.add(freeIdentifier.asDecl());
+				}
+			}
+		}
+		p = p.bindTheseIdents(idsToBind);
+		return ff
+				.makeQuantifiedPredicate(Predicate.EXISTS, boundDecls, p, null);
 	}
 }
