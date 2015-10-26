@@ -1,4 +1,5 @@
 language: java
+sudo: false
 script: mvn -f de.stups.hhu.rodinmetapredicates.parent/pom.xml clean verify
 before_install:
 - rvm install 2.0.0
