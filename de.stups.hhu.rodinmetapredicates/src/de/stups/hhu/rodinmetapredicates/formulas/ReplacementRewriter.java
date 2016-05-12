@@ -16,6 +16,7 @@ import org.eventb.core.ast.Expression;
 import org.eventb.core.ast.ExtendedPredicate;
 import org.eventb.core.ast.FormulaFactory;
 import org.eventb.core.ast.FreeIdentifier;
+import org.eventb.core.ast.IParseResult;
 import org.eventb.core.ast.Predicate;
 import org.eventb.core.ast.SetExtension;
 import org.eventb.core.ast.extension.IPredicateExtension;
@@ -42,8 +43,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 			Set<String> setOfEvents = new HashSet<String>();
 			Expression[] childExpressions = arg0.getChildExpressions();
 			FormulaFactory ff = arg0.getFactory();
-			for (Expression ex : ((SetExtension) childExpressions[0])
-					.getMembers()) {
+			for (Expression ex : ((SetExtension) childExpressions[0]).getMembers()) {
 				setOfEvents.add(ex.toString());
 			}
 
@@ -66,8 +66,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return arg0;
 	}
 
-	private Predicate controllerPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws CoreException {
+	private Predicate controllerPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
 		List<Predicate> subPredicates = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
 			Set<String> setOfEventsWithoutEvt = new HashSet<String>();
@@ -79,8 +78,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 
 			Predicate deadlock = deadlockPredicate(setOfEventsWithoutEvt, ff);
 			Predicate enabled = enabledPredicate(setOnlyE, ff);
-			subPredicates.add(ff.makeBinaryPredicate(Predicate.LAND, enabled,
-					deadlock, null));
+			subPredicates.add(ff.makeBinaryPredicate(Predicate.LAND, enabled, deadlock, null));
 		}
 
 		if (subPredicates.isEmpty()) {
@@ -90,16 +88,14 @@ public class ReplacementRewriter extends DefaultRewriter {
 		}
 	}
 
-	private Predicate join(List<Predicate> subPredicates, FormulaFactory ff,
-			int tag) {
+	private Predicate join(List<Predicate> subPredicates, FormulaFactory ff, int tag) {
 		if (subPredicates.size() == 1) {
 			return subPredicates.get(0);
 		}
 		return ff.makeAssociativePredicate(tag, subPredicates, null);
 	}
 
-	private Predicate deadlockPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws CoreException {
+	private Predicate deadlockPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
 		List<Predicate> subFormulas = new ArrayList<Predicate>();
 		List<Predicate> eventsFormulas = new ArrayList<Predicate>();
 
@@ -107,18 +103,15 @@ public class ReplacementRewriter extends DefaultRewriter {
 			List<Predicate> guardPredicates = new ArrayList<Predicate>();
 			ISCEvent scEvent;
 			scEvent = getSCEvent(evt);
-			ISCGuard[] guards = scEvent
-					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
+			ISCGuard[] guards = scEvent.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
 			for (ISCGuard g : guards) {
-				guardPredicates.add(g.getPredicate(ff.makeTypeEnvironment()));
+				guardPredicates.add(getPredicateFromGuard(g, ff, scEvent));
 			}
 
 			Predicate joinedGuards = join(guardPredicates, ff, Predicate.LAND);
-			subFormulas.add(ff.makeUnaryPredicate(Predicate.NOT, joinedGuards,
-					null));
+			subFormulas.add(ff.makeUnaryPredicate(Predicate.NOT, joinedGuards, null));
 			Predicate allSubs = join(subFormulas, ff, Predicate.LAND);
-			eventsFormulas.add(bindFreeVariables(allSubs,
-					scEvent.getSCParameters(), ff));
+			eventsFormulas.add(bindFreeVariables(allSubs, scEvent.getSCParameters(), ff));
 		}
 
 		if (eventsFormulas.isEmpty()) {
@@ -128,30 +121,25 @@ public class ReplacementRewriter extends DefaultRewriter {
 		}
 	}
 
-	private Predicate deterministicPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws CoreException {
+	private Predicate deterministicPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
 		Predicate controller = controllerPredicate(setOfEvents, ff);
 		Predicate deadlock = deadlockPredicate(setOfEvents, ff);
 
-		return ff
-				.makeBinaryPredicate(Predicate.LOR, controller, deadlock, null);
+		return ff.makeBinaryPredicate(Predicate.LOR, controller, deadlock, null);
 	}
 
-	private Predicate enabledPredicate(Set<String> setOfEvents,
-			FormulaFactory ff) throws CoreException {
+	private Predicate enabledPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
 		List<Predicate> eventsFormulas = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
 			List<Predicate> subFormulas = new ArrayList<Predicate>();
 			ISCEvent scEvent;
 			scEvent = getSCEvent(evt);
-			ISCGuard[] guards = scEvent
-					.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
+			ISCGuard[] guards = scEvent.getChildrenOfType(ISCGuard.ELEMENT_TYPE);
 			for (ISCGuard g : guards) {
-				subFormulas.add(g.getPredicate(ff.makeTypeEnvironment()));
+				subFormulas.add(getPredicateFromGuard(g, ff, scEvent));
 			}
 			Predicate allSubs = join(subFormulas, ff, Predicate.LAND);
-			eventsFormulas.add(bindFreeVariables(allSubs,
-					scEvent.getSCParameters(), ff));
+			eventsFormulas.add(bindFreeVariables(allSubs, scEvent.getSCParameters(), ff));
 		}
 
 		if (eventsFormulas.isEmpty()) {
@@ -159,6 +147,12 @@ public class ReplacementRewriter extends DefaultRewriter {
 		} else {
 			return join(eventsFormulas, ff, Predicate.LAND);
 		}
+	}
+
+	private Predicate getPredicateFromGuard(ISCGuard g, FormulaFactory ff, ISCEvent scEvent) throws CoreException {
+		IParseResult parsePredicate = ff.parsePredicate(g.getPredicateString(), scEvent);
+		Predicate p = parsePredicate.getParsedPredicate();
+		return p;
 	}
 
 	private ISCEvent getSCEvent(String label) throws RodinDBException {
@@ -170,24 +164,25 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return null;
 	}
 
-	private Predicate bindFreeVariables(Predicate p,
-			ISCParameter[] iscParameters, FormulaFactory ff)
+	private Predicate bindFreeVariables(Predicate p, ISCParameter[] iscParameters, FormulaFactory ff)
 			throws RodinDBException {
 		List<FreeIdentifier> idsToBind = new ArrayList<FreeIdentifier>();
 		List<BoundIdentDecl> boundDecls = new ArrayList<BoundIdentDecl>();
 
 		for (FreeIdentifier freeIdentifier : p.getFreeIdentifiers()) {
 			for (ISCParameter param : iscParameters) {
-				if (freeIdentifier.getName()
-						.equals(param.getIdentifierString())) {
-
+				if (freeIdentifier.getName().equals(param.getIdentifierString())) {
 					idsToBind.add(freeIdentifier);
 					boundDecls.add(freeIdentifier.asDecl());
 				}
 			}
 		}
+
+		if (boundDecls.isEmpty()) {
+			return p;
+		}
+
 		p = p.bindTheseIdents(idsToBind);
-		return ff
-				.makeQuantifiedPredicate(Predicate.EXISTS, boundDecls, p, null);
+		return ff.makeQuantifiedPredicate(Predicate.EXISTS, boundDecls, p, null);
 	}
 }
