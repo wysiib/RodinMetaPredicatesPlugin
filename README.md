@@ -1,6 +1,9 @@
 # Meta-Predicates for Event-B in Rodin
 An experimental plugin for Rodin that extends the predicate syntax for guards and invariants by allowing to reference other guards.
 
+The plugin has been presented at the Rodin Workshop 2016.
+An extended abstract is available [here](http://stups.hhu.de/mediawiki/images/c/ce/Pub-RodinWorkshop2016MetaPredicates.pdf).
+
 Examples will follow once the plugin is less experimental.
 
 [![Build Status](https://travis-ci.org/wysiib/RodinMetaPredicatesPlugin.svg)](https://travis-ci.org/wysiib/RodinMetaPredicatesPlugin)
