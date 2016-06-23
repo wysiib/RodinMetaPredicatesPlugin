@@ -15,8 +15,8 @@ Maven 3 is required to build the project:
 
 This will produce an updatesite in de.stups.hhu.rodinaxiompos.repository/target
 
-We autmatically produce nightly builds that can be installed using the update site located at  http://nightly.cobra.cs.uni-duesseldorf.de/rodin_axiom_pos/
-
+We autmatically produce nightly builds that can be installed using the update site located at  https://www3.hhu.de/stups/rodin/meta_predicates/nightly/
+.
 
 ## Contributing/Bugs
 Pull requests are very welcome. Suggestions for new extensions and known bugs are tracked on [Github](https://github.com/wysiib/RodinMetaPredicatesPlugin/issues)
