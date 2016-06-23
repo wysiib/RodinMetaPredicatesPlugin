@@ -41,23 +41,31 @@ public class ReplacementRewriter extends DefaultRewriter {
 			IPredicateExtension extension = arg0.getExtension();
 			// there should be one child expression, namely the set of events
 			Set<String> setOfEvents = new HashSet<String>();
+			Set<String> setOfIDsNotToBeQuantified = new HashSet<String>();
+
 			Expression[] childExpressions = arg0.getChildExpressions();
 			FormulaFactory ff = arg0.getFactory();
 			for (Expression ex : ((SetExtension) childExpressions[0]).getMembers()) {
 				setOfEvents.add(ex.toString());
 			}
 
-			if ("controller".equals(extension.getSyntaxSymbol())) {
-				return controllerPredicate(setOfEvents, ff);
+			if (childExpressions.length > 1) {
+				for (Expression ex : ((SetExtension) childExpressions[1]).getMembers()) {
+					setOfIDsNotToBeQuantified.add(ex.toString());
+				}
 			}
-			if ("deadlock".equals(extension.getSyntaxSymbol())) {
-				return deadlockPredicate(setOfEvents, ff);
+
+			if (extension.getSyntaxSymbol().startsWith("controller")) {
+				return controllerPredicate(setOfEvents, setOfIDsNotToBeQuantified, ff);
 			}
-			if ("deterministic".equals(extension.getSyntaxSymbol())) {
-				return deterministicPredicate(setOfEvents, ff);
+			if (extension.getSyntaxSymbol().startsWith("deadlock")) {
+				return deadlockPredicate(setOfEvents, setOfIDsNotToBeQuantified, ff);
 			}
-			if ("enabled".equals(extension.getSyntaxSymbol())) {
-				return enabledPredicate(setOfEvents, ff);
+			if (extension.getSyntaxSymbol().startsWith("deterministic")) {
+				return deterministicPredicate(setOfEvents, setOfIDsNotToBeQuantified, ff);
+			}
+			if (extension.getSyntaxSymbol().startsWith("enabled")) {
+				return enabledPredicate(setOfEvents, setOfIDsNotToBeQuantified, ff);
 			}
 		} catch (Exception e) {
 			rewriteFailed = true;
@@ -66,7 +74,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return arg0;
 	}
 
-	private Predicate controllerPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
+	private Predicate controllerPredicate(Set<String> setOfEvents, Set<String> setOfIDsNotToBeQuantified,
+			FormulaFactory ff) throws CoreException {
 		List<Predicate> subPredicates = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
 			Set<String> setOfEventsWithoutEvt = new HashSet<String>();
@@ -76,8 +85,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 			Set<String> setOnlyE = new HashSet<String>();
 			setOnlyE.add(evt);
 
-			Predicate deadlock = deadlockPredicate(setOfEventsWithoutEvt, ff);
-			Predicate enabled = enabledPredicate(setOnlyE, ff);
+			Predicate deadlock = deadlockPredicate(setOfEventsWithoutEvt, setOfIDsNotToBeQuantified, ff);
+			Predicate enabled = enabledPredicate(setOnlyE, setOfIDsNotToBeQuantified, ff);
 			subPredicates.add(ff.makeBinaryPredicate(Predicate.LAND, enabled, deadlock, null));
 		}
 
@@ -95,7 +104,8 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return ff.makeAssociativePredicate(tag, subPredicates, null);
 	}
 
-	private Predicate deadlockPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
+	private Predicate deadlockPredicate(Set<String> setOfEvents, Set<String> setOfIDsNotToBeQuantified,
+			FormulaFactory ff) throws CoreException {
 		List<Predicate> subFormulas = new ArrayList<Predicate>();
 		List<Predicate> eventsFormulas = new ArrayList<Predicate>();
 
@@ -111,7 +121,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 			Predicate joinedGuards = join(guardPredicates, ff, Predicate.LAND);
 			subFormulas.add(ff.makeUnaryPredicate(Predicate.NOT, joinedGuards, null));
 			Predicate allSubs = join(subFormulas, ff, Predicate.LAND);
-			eventsFormulas.add(bindFreeVariables(allSubs, scEvent.getSCParameters(), ff));
+			eventsFormulas.add(bindFreeVariables(allSubs, scEvent.getSCParameters(), setOfIDsNotToBeQuantified, ff));
 		}
 
 		if (eventsFormulas.isEmpty()) {
@@ -121,14 +131,16 @@ public class ReplacementRewriter extends DefaultRewriter {
 		}
 	}
 
-	private Predicate deterministicPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
-		Predicate controller = controllerPredicate(setOfEvents, ff);
-		Predicate deadlock = deadlockPredicate(setOfEvents, ff);
+	private Predicate deterministicPredicate(Set<String> setOfEvents, Set<String> setOfIDsNotToBeQuantified,
+			FormulaFactory ff) throws CoreException {
+		Predicate controller = controllerPredicate(setOfEvents, setOfIDsNotToBeQuantified, ff);
+		Predicate deadlock = deadlockPredicate(setOfEvents, setOfIDsNotToBeQuantified, ff);
 
 		return ff.makeBinaryPredicate(Predicate.LOR, controller, deadlock, null);
 	}
 
-	private Predicate enabledPredicate(Set<String> setOfEvents, FormulaFactory ff) throws CoreException {
+	private Predicate enabledPredicate(Set<String> setOfEvents, Set<String> setOfIDsNotToBeQuantified,
+			FormulaFactory ff) throws CoreException {
 		List<Predicate> eventsFormulas = new ArrayList<Predicate>();
 		for (String evt : setOfEvents) {
 			List<Predicate> subFormulas = new ArrayList<Predicate>();
@@ -139,7 +151,7 @@ public class ReplacementRewriter extends DefaultRewriter {
 				subFormulas.add(getPredicateFromGuard(g, ff, scEvent));
 			}
 			Predicate allSubs = join(subFormulas, ff, Predicate.LAND);
-			eventsFormulas.add(bindFreeVariables(allSubs, scEvent.getSCParameters(), ff));
+			eventsFormulas.add(bindFreeVariables(allSubs, scEvent.getSCParameters(), setOfIDsNotToBeQuantified, ff));
 		}
 
 		if (eventsFormulas.isEmpty()) {
@@ -164,16 +176,18 @@ public class ReplacementRewriter extends DefaultRewriter {
 		return null;
 	}
 
-	private Predicate bindFreeVariables(Predicate p, ISCParameter[] iscParameters, FormulaFactory ff)
-			throws RodinDBException {
+	private Predicate bindFreeVariables(Predicate p, ISCParameter[] iscParameters,
+			Set<String> setOfIDsNotToBeQuantified, FormulaFactory ff) throws RodinDBException {
 		List<FreeIdentifier> idsToBind = new ArrayList<FreeIdentifier>();
 		List<BoundIdentDecl> boundDecls = new ArrayList<BoundIdentDecl>();
 
 		for (FreeIdentifier freeIdentifier : p.getFreeIdentifiers()) {
 			for (ISCParameter param : iscParameters) {
 				if (freeIdentifier.getName().equals(param.getIdentifierString())) {
-					idsToBind.add(freeIdentifier);
-					boundDecls.add(freeIdentifier.asDecl());
+					if (!setOfIDsNotToBeQuantified.contains(freeIdentifier.getName())) {
+						idsToBind.add(freeIdentifier);
+						boundDecls.add(freeIdentifier.asDecl());
+					}
 				}
 			}
 		}
