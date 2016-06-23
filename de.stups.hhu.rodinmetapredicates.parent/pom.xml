@@ -4,7 +4,7 @@
 
 	<groupId>de.stups.hhu.rodinmetapredicates</groupId>
   	<artifactId>de.stups.hhu.rodinmetapredicates.parent</artifactId>
-  	<version>1.0.0.qualifier</version>
+  	<version>1.1.0.qualifier</version>
 
 	<packaging>pom</packaging>
 

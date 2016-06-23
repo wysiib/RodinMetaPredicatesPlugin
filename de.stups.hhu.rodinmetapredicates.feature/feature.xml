@@ -2,7 +2,7 @@
 <feature
       id="de.stups.hhu.rodinmetapredicates.feature"
       label="Meta-Predicates for Event-B"
-      version="1.0.0.qualifier">
+      version="1.1.0.qualifier">
 
    <description url="https://github.com/wysiib/RodinMetaPredicatesPlugin">
        An experimental plugin for Rodin that extends the predicate syntax for guards and invariants by allowing to reference other guards.
